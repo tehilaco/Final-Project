@@ -230,7 +230,7 @@ def IBD(aoa_num):
 
 
 
-
+IBS(new_matrix(aoa))
 #IBD(new_matrix(aoa))
 
 
@@ -248,113 +248,14 @@ def merge(aoa):
 
 aoa_for_roh = merge(aoa_all)
 
-def roh_individual1(aoa):
-    new_matrix =[]
-    f = open("ROH.csv", "w+")
-    new_row = []
-    new_row.append([row[0] for row in aoa])
-    new_row.append([row[1] for row in aoa])
-    for i in range(2, 3):
-        new_row.append([row[i] for row in aoa])
-    for i in range(2,len(new_row)):
-        flagOne = 0
-        new_cow = [0,0,0,0,0,0]
-        counter=0
-        denominator=0
-        if(new_row[i][0] == "AA" or new_row[i][0] == "CC" or new_row[i][0] == "TT" or new_row[i][0] == "GG"):
-           flagOne=-1
-        for j in range(1,len(new_row[0])):
-            if(new_row[0][j] == new_row[0][flagOne+1]):
-                if(new_row[i][j] != "AA" and new_row[i][j] != "CC" and new_row[i][j] != "TT" and new_row[i][j] != "GG"):
-                    if(j != flagOne+1):
-                        x = (int(new_row[1][j-1]) - int(new_row[1][flagOne+1]))/float(1000000)
-                        if(x<4.0 and x>2.0):
-                           new_cow[0] +=1
-                           counter+= 3*1000
-                           denominator+=1
-                        if (x < 6.0 and x > 4.0):
-                           new_cow[1] += 1
-                           counter += 5*1000
-                           denominator += 1
-                        if (x < 8.0 and x > 6.0):
-                           new_cow[2] += 1
-                           counter += 7*1000
-                           denominator += 1
 
-                        if (x < 10.0 and x > 8.0):
-                           new_cow[3] += 1
-                           counter += 9*1000
-                           denominator += 1
-                        if (x >10):
-                           new_cow[4] += 1
-                           counter += 10*1000
-                           denominator += 1
-
-                        flagOne=j
-                    else:
-                        flagOne = j
-                else:
-                    if(j == len(new_row[0])-1):
-                        x = (int(new_row[1][j]) - int(new_row[1][flagOne + 1]))/float(1000000)
-                        if (x < 4.0 and x > 2.0):
-                           new_cow[0] += 1
-                           counter += 3 * 1000
-                           denominator += 1
-                        if (x < 6.0 and x > 4.0):
-                           new_cow[1] += 1
-                           counter += 5 * 1000
-                           denominator += 1
-                        if (x < 8.0 and x > 6.0):
-                           new_cow[2] += 1
-                           counter += 7 * 1000
-                           denominator += 1
-
-                        if (x < 10.0 and x > 8.0):
-                           new_cow[3] += 1
-                           counter += 9 * 1000
-                           denominator += 1
-                        if (x > 10):
-                           new_cow[4] += 1
-                           counter += 10 * 1000
-                           denominator += 1
-            else:
-               if(new_row[i][j] == "AA" or new_row[i][j] == "CC" or new_row[i][j] == "TT" or new_row[i][j] == "GG"):
-                  x = (int(new_row[1][j-1])- int(new_row[1][flagOne + 1]))/float(1000000)
-                  if (x < 4.0 and x > 2.0):
-                     new_cow[0] += 1
-                     counter += 3 * 1000
-                     denominator += 1
-                  if (x < 6.0 and x > 4.0):
-                     new_cow[1] += 1
-                     counter += 5 * 1000
-                     denominator += 1
-                  if (x < 8.0 and x > 6.0):
-                     new_cow[2] += 1
-                     counter += 7 * 1000
-                     denominator += 1
-                  if (x < 10.0 and x > 8.0):
-                     new_cow[3] += 1
-                     counter += 9 * 1000
-                     denominator += 1
-                  if (x > 10):
-                     new_cow[4] += 1
-                     counter += 10 * 1000
-                     denominator += 1
-               flagOne=j-1
-
-        new_cow[5]  = counter/denominator
-        new_matrix.append(new_cow)
-    f.write(str(new_matrix))
-    print("ROH FOR COW 1: " + str(new_cow[5]))
-
-
-def roh_individual3(aoa):
+def roh_individual(aoa):
    new_matrix = []
    f = open("ROH.csv", "w+")
    new_row = []
    new_row.append([row[0] for row in aoa])
    new_row.append([row[1] for row in aoa])
-   for i in range(4, 5):
+   for i in range(2, len(aoa[0])):
       new_row.append([row[i] for row in aoa])
    for i in range(2, len(new_row)):
       flagOne = 0
@@ -432,6 +333,7 @@ def roh_individual3(aoa):
                   new_cow[2] += 1
                   counter += 7 * 1000
                   denominator += 1
+
                if (x < 10.0 and x > 8.0):
                   new_cow[3] += 1
                   counter += 9 * 1000
@@ -445,9 +347,12 @@ def roh_individual3(aoa):
       new_cow[5] = counter / denominator
       new_matrix.append(new_cow)
    f.write(str(new_matrix))
-   print("ROH FOR COW 3: " + str(new_cow[5]))
-roh_individual1(aoa_for_roh)
-roh_individual3(aoa_for_roh)
+   print(new_matrix)
+
+
+
+roh_individual(aoa_for_roh)
+
 
 
 def dis(cow1,cow2):
@@ -529,6 +434,7 @@ start = time()
 #distans(new_matrix(aoa),1)
 
 total = time()-start
+print(total)
 #print(total)
 
 
