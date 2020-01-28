@@ -229,8 +229,6 @@ def IBD(aoa_num):
    return x
 
 
-
-IBS(new_matrix(aoa))
 #IBD(new_matrix(aoa))
 
 
@@ -351,7 +349,7 @@ def roh_individual(aoa):
 
 
 
-roh_individual(aoa_for_roh)
+#roh_individual(aoa_for_roh)
 
 
 
@@ -410,12 +408,6 @@ def distans(aoa,n):
 
    return x
 
-
-
-
-
-
-
 #print len(aoa)
 
 #y = np.genfromtxt('IBD.csv')
@@ -449,3 +441,47 @@ def normal(data):
 
 #normal(y)
 
+def sum_p(individualONE, individualTWO):
+
+    counter = 0
+    for i in range(len(individualONE)):
+        if(individualONE[i][0] == individualONE[i][1] and individualTWO[i][0] == individualTWO[i][1] and individualTWO[i][0] == individualONE[i][0]):
+            counter+=1
+        elif(individualONE[i] != individualTWO[i] and individualONE[i][0] == individualONE[i][1] and individualTWO[i][1] == individualTWO[i][0]):
+            counter+=0
+        else:
+            counter+=0.5
+
+    return counter
+
+
+def P_Homozygosity(aoa):
+   rowsSize = len(aoa[0])
+   colSize = len(aoa[0])
+   x = np.ones((rowsSize, colSize))
+   f = open("P_HOMO.csv", "w+")
+   #len(aoa[0])
+   for i in range(len(aoa[0])):
+      new_row = []
+      cow1 = [row[i] for row in aoa]
+      #len(aoa[0])
+      for j in range(i,len(aoa[0])):
+         cow2 = [row[j] for row in aoa]
+
+         x[i][j] = sum_p(cow1, cow2)/float(len(cow1))
+         x[j][i] = x[i][j]
+         #new_row.append(0.5 - (IbdForPair(X, Y))/(4*float(counterP)))
+      #new_matrix.append(new_row)
+
+   #print (new_matrix)
+   #print(x)
+   for e in x:
+      for value in e:
+         f.write(str(value))
+         f.write(' ')
+      f.write('\n')
+
+   return x
+
+
+P_Homozygosity(aoa)
