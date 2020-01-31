@@ -159,8 +159,6 @@ def IBS(aoa_num):
    return x
 
 
-
-
 def pc(aoa):
    new_p = []
    for row in aoa:
@@ -171,8 +169,6 @@ def pc(aoa):
       new = counter / float((100))
       new_p.append(new)
    return new_p
-
-
 
 
 #print(pc(new_matrix(aoa)))
@@ -186,7 +182,6 @@ def sumP(arr):
 #print(sumP(pc(new_matrix(aoa))))
 
 def IbdForPair(individualONE,individualTWO):
-
    counter = 0
    for i in range(len(individualONE)):
       counter+= (individualTWO[i] - individualONE[i])**2
@@ -234,7 +229,7 @@ def IBD(aoa_num):
 
 def merge(aoa):
    new_aoa = []
-   for row in aoa:
+   for row in aoa[1:len(aoa)]:
       new_row = []
       new_row.append(row[1])
       new_row.append(row[2])
@@ -279,7 +274,6 @@ def roh_individual(aoa):
                      new_cow[2] += 1
                      counter += 7 * 1000
                      denominator += 1
-
                   if (x < 10.0 and x > 8.0):
                      new_cow[3] += 1
                      counter += 9 * 1000
@@ -288,7 +282,6 @@ def roh_individual(aoa):
                      new_cow[4] += 1
                      counter += 10 * 1000
                      denominator += 1
-
                   flagOne = j
                else:
                   flagOne = j
@@ -418,17 +411,12 @@ def distans(aoa,n):
 
 #print(y_df.describe())
 
-
-
-
-
 start = time()
 #distans(new_matrix(aoa),1)
 
 total = time()-start
-print(total)
-#print(total)
 
+#print(total)
 
 def normal(data):
    transX = np.copy(data.T)
@@ -442,7 +430,6 @@ def normal(data):
 #normal(y)
 
 def sum_p(individualONE, individualTWO):
-
     counter = 0
     for i in range(len(individualONE)):
         if(individualONE[i][0] == individualONE[i][1] and individualTWO[i][0] == individualTWO[i][1] and individualTWO[i][0] == individualONE[i][0]):
@@ -453,7 +440,6 @@ def sum_p(individualONE, individualTWO):
             counter+=0.5
 
     return counter
-
 
 def P_Homozygosity(aoa):
    rowsSize = len(aoa[0])
@@ -467,14 +453,9 @@ def P_Homozygosity(aoa):
       #len(aoa[0])
       for j in range(i,len(aoa[0])):
          cow2 = [row[j] for row in aoa]
-
          x[i][j] = sum_p(cow1, cow2)/float(len(cow1))
          x[j][i] = x[i][j]
-         #new_row.append(0.5 - (IbdForPair(X, Y))/(4*float(counterP)))
-      #new_matrix.append(new_row)
 
-   #print (new_matrix)
-   #print(x)
    for e in x:
       for value in e:
          f.write(str(value))
@@ -483,5 +464,199 @@ def P_Homozygosity(aoa):
 
    return x
 
+#P_Homozygosity(aoa)
 
-P_Homozygosity(aoa)
+def ArrayEquals(cow1,cow2):
+   print(cow2)
+   print(cow1)
+   distan = np.zeros((len(cow1)))
+
+   for i in range(len(cow1)):
+      if (cow1[i] == cow2[i]):
+         distan[i] = 2
+         continue
+      else:
+         if((cow1[i] == 2 and cow2[i] == 0) or (cow1[i] == 0 and cow2[i] == 2)):
+            distan[i] = 0
+            continue
+         else:
+            distan[i] = 1
+            continue
+   print(distan)
+   return distan
+
+def runs_ibd2_ibd1(distans,matrix,numcow1,numcow2):
+   snp_cow1 = matrix[numcow1]
+   snp_cow2= matrix[numcow2]
+   print(len(matrix))
+   i=0
+   start = 0
+   end = 0
+   sum = 0
+   while(i<len(distans)):
+      S1=""
+      S2=""
+      if(distans[i] == 2):
+         start=i
+         while(i<len(distans)):
+            if(distans[i] != 2):
+               if((i+1<len(distans) and distans[i] == 0 and distans[i+1] == 2) or (i+1<len(distans) and distans[i] == 1 and distans[i+1] == 2)):
+                  distans[i] = 2
+                  snp_cow1[i] = "AA"
+                  i = i + 1
+                  end = i
+                  print(distans)
+               else:
+                  break
+            else:
+               i=i+1
+               end=i
+      if(start!=0):
+         print("start:")
+         print(start)
+         print("end")
+         print(end)
+      for k in range(start,end):
+         S1 += str(snp_cow1[k][0])
+         S2 +=str(snp_cow1[k][1])
+      print(S1)
+      print(S2)
+      if(S1 != ""):
+         if (S1 == S2):
+            counter = int(matrix[1][end - 1]) - int(matrix[1][start])
+            print(counter)
+            if (counter < 1000000):
+               for k in range(start, end):
+                  distans[k] = 1
+            else:
+               for k in range(start, end):
+                  distans[k] = -1
+               sum += counter
+         else:
+            print(int(matrix[1][end - 1]))
+            print(matrix[1][start])
+            counter = 0.5 * (int(matrix[1][end - 1]) - int(matrix[1][start]))
+            print(counter)
+            if (counter < 500000):
+               for k in range(start, end):
+                  distans[k] = 1
+            else:
+               for k in range(start, end):
+                  distans[k] = -1
+               sum += counter
+
+
+      i=i+1
+      start=0
+      end=0
+   print("sum after 2:")
+   print(sum)
+   print("dis after 2:")
+   print(distans)
+   i=0
+   start = 0
+   end = 0
+   while (i < len(distans)):
+      S1 = ""
+      S2 = ""
+      S3 = ""
+      if (distans[i] == 1):
+         start = i
+         while (i < len(distans)):
+            if (distans[i] != 1):
+               if (i+1<len(distans) and distans[i] == 0 and distans[i + 1] == 1):
+                  distans[i] = 1
+                  snp_cow1[i] = "AA"
+                  snp_cow2[i] = "AA"
+                  i = i + 1
+                  end = i
+                  print(distans)
+               else:
+                  break
+            else:
+               i = i + 1
+               end = i
+      print("start:")
+      print(start)
+      print("end:")
+      print(end)
+
+      for k in range(start, end):
+         if(snp_cow1[k][0] == snp_cow2[k][0]):
+            S1 += str(snp_cow1[k][0])
+            S2 += str(snp_cow1[k][1])
+            S3 += str(snp_cow2[k][1])
+         elif (snp_cow1[k][0] == snp_cow2[k][1]):
+            S1 += str(snp_cow1[k][0])
+            S2 += str(snp_cow1[k][1])
+            S3 += str(snp_cow2[k][0])
+         elif (snp_cow1[k][1] == snp_cow2[k][0]):
+            S1 += str(snp_cow1[k][1])
+            S2 += str(snp_cow1[k][0])
+            S3 += str(snp_cow2[k][1])
+         elif (snp_cow1[k][1] == snp_cow2[k][1]):
+            S1 += str(snp_cow1[k][1])
+            S2 += str(snp_cow1[k][0])
+            S3 += str(snp_cow2[k][0])
+      print(S1)
+      print(S2)
+      print(S3)
+      if (S1 != ""):
+         if (S1 == S2 or S1 == S3):
+            counter = 0.5 * (int(matrix[1][end - 1]) - int(matrix[1][start]))
+            if (counter < 500000):
+               for k in range(start, end):
+                  distans[k] = 0
+            else:
+               for k in range(start, end):
+                  distans[k] = -1
+               sum += counter
+         else:
+            counter = 0.25 * (int(matrix[1][end - 1]) - int(matrix[1][start]))
+            if (counter < 250000):
+               for k in range(start, end):
+                  distans[k] = 0
+            else:
+               for k in range(start, end):
+                  distans[k] = -1
+               sum += counter
+
+      i = i + 1
+      start = 0
+      end = 0
+   print("sum ALL:")
+   print(sum)
+   print("dis END:")
+   print(distans)
+   return sum
+
+def matrix_Equals(aoa,aoa_all):
+   rowsSize = len(aoa[0])
+   colSize = len(aoa[0])
+   x = np.ones((rowsSize, colSize))
+
+   new_row = []
+   new_row.append([row[0] for row in aoa_all])
+   new_row.append([row[1] for row in aoa_all])
+   #len(aoa[0])
+   for i in range(2, len(aoa_all[0])):
+      new_row.append([row[i] for row in aoa_all])
+
+   #len(aoa[0])
+   for i in range(len(aoa[0])):
+      cow1 = [row[i] for row in aoa]
+      #len(aoa[0])
+      for j in range(i,len(aoa[0])):
+         cow2 = [row[j] for row in aoa]
+         dis = ArrayEquals(cow1,cow2)
+
+         x[i][j] = runs_ibd2_ibd1(dis,new_row,i+2,j+2)
+         x[j][i] = x[i][j]
+         #new_row.append(0.5 - (IbdForPair(X, Y))/(4*float(counterP)))
+      #new_matrix.append(new_row)
+
+   #print (new_matrix)
+   print(x)
+
+matrix_Equals(new_matrix(aoa),aoa_for_roh)
+
