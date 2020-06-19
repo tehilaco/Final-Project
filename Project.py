@@ -3,7 +3,8 @@ import csv
 import numpy as np
 import pandas as pd
 
-
+df = pd.read_excel('Moran_cows_if.xlsx')
+new_roh = []
 
 
 
@@ -174,12 +175,11 @@ def Equals(cow1,cow2):
 
 def IBS(aoa_num , index ):
    i = index[0]
-   print(i)
+
    j = index[1]
    cow = [row[i-2] for row in aoa_num]
    sire = [row[j-2] for row in aoa_num]
-   print(cow)
-   print(sire)
+
    x = Equals(cow,sire)/(2*float(len(aoa_num)))
 
    return x
@@ -298,9 +298,7 @@ def threeMadadim():
       new_ha.append(ha_list)
       ibd_list = IBD(x, y)
       new_ibd.append(ibd_list)
-      print(new_ibs)
-      print(new_ibd)
-      print(new_ha)
+
 
    df["IBS"] = new_ibs
    df["IBD"] = new_ibd
@@ -344,47 +342,6 @@ def predictGen_high(aoa_num, index):
          cow.append(2)
    return cow
 
-def pred_roh(aoa, i):
-   new_matrix = []
-   new_row = []
-   new_row.append([row[0] for row in aoa])
-   new_row.append([row[1] for row in aoa])
-   new_row.append(i)
-   flagOne = 0
-   new_cow = [0, 0, 0, 0, 0, 0 ,0 ,0 ,0]
-   counter = 0
-   denominator = 0
-   if (new_row[2][0] == 2 or new_row[2][0] == 0):
-      flagOne = -1
-   for j in range(1, len(new_row[0])):
-      if (new_row[0][j] == new_row[0][flagOne + 1]):
-         if (new_row[2][j] == 1):
-            if (j != flagOne + 1):
-               x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
-               if (x > 3.0):
-                   counter += x
-               flagOne = j
-            else:
-               flagOne = j
-         else:
-            if (j == len(new_row[0]) - 1 or new_row[0][j] != new_row[0][j + 1]):
-               x = (int(new_row[1][j]) - int(new_row[1][flagOne + 1])) / float(1000000)
-
-               if ( x > 3.0):
-                  counter += x
-
-               flagOne = j
-      else:
-         if (new_row[2][j] == 0 or new_row[2][j] == 2):
-            x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
-            if (x > 3.0):
-                counter += x
-         flagOne = j - 1
-
-   return counter
-
-
-
 
 def ArrayEquals(cow1,cow2):
 
@@ -403,24 +360,57 @@ def ArrayEquals(cow1,cow2):
    #print(distan)
    return distan
 
-def roh_individual(aoa,aoa_num, i):
-   new_matrix = []
+def roh_individual(aoa,aoa_num, k):
    new_row = []
    new_row.append([row[0] for row in aoa])
    new_row.append([row[1] for row in aoa])
-   new_row.append([row[i-2] for row in aoa_num])
+   new_row.append([row[k-2] for row in aoa_num])
    flagOne = 0
-   new_cow = [0, 0, 0, 0, 0, 0 ,0 ,0 ,0]
    counter = 0
-   denominator = 0
+   end = 0
+   i=0
+
+
+   while (i<len(new_row[2])):
+
+      if (new_row[2][i] != 1  and i+1<len(new_row[2]) and new_row[0][end+1] == new_row[0][end]):
+         start = i
+         end = i
+
+         while (i+1 < len(new_row[2]) and new_row[0][i+1] == new_row[0][end]):
+            if (new_row[2][i] == 1):
+               if ((i + 1 < len(new_row[2]) and new_row[2][i] == 1 and new_row[2][i + 1] != 1 and new_row[0][i+1] == new_row[0][end])):
+                  new_row[2][i] = 2
+                  i = i + 1
+                  end = i
+               else:
+                  break
+            else:
+               if((i+2 < len(new_row[2]) and new_row[2][i+1] == 1 and new_row[2][i+2] == 1  and new_row[0][i+1] != new_row[0][end]) or
+                  (i+2 < len(new_row[2]) and new_row[2][i + 1] == 1 and new_row[2][i + 2] == 1 and  new_row[0][i+1] == new_row[0][end]) or
+                  ( i+2 == len(new_row[2]) and new_row[2][i+1] == 1 and start == i)) :
+                  break
+               else:
+                  i = i + 1
+                  end = i
+
+
+
+      i = i + 1
+
+      end = 0
+
+
+
    if (new_row[2][0] == 2 or new_row[2][0] == 0):
       flagOne = -1
    for j in range(1, len(new_row[0])):
       if (new_row[0][j] == new_row[0][flagOne + 1]):
-         if (new_row[2][j] == 1):
+         if (j+1 < len(new_row[2]) and new_row[2][j] == 1  ):
             if (j != flagOne + 1):
                x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
-               if (x > 4.0):
+
+               if (x > 1.0):
                    counter += x
                flagOne = j
             else:
@@ -429,21 +419,20 @@ def roh_individual(aoa,aoa_num, i):
             if (j == len(new_row[0]) - 1 or new_row[0][j] != new_row[0][j + 1]):
                x = (int(new_row[1][j]) - int(new_row[1][flagOne + 1])) / float(1000000)
 
-               if ( x > 4.0):
+               if ( x > 1.0):
                   counter += x
 
                flagOne = j
       else:
          if (new_row[2][j] == 0 or new_row[2][j] == 2):
             x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
-            if (x > 4.0):
+
+            if (x > 1.0):
                 counter += x
+
          flagOne = j - 1
 
    return counter
-
-
-
 
 def max_show(aoa):
    new_list = []
@@ -471,7 +460,7 @@ def merge_max_gen(aoa,arr):
 
 aoa_for_roh = merge_max_gen(aoa_all,max_show(aoa))
 
-def runs_ibd2_ibd(distans, matrix):
+def runs_ibd1_ibd2(distans, matrix):
    cromozom = matrix[0]
    snp_cow1 = matrix[2]
    snp_cow2 = matrix[3]
@@ -480,777 +469,7 @@ def runs_ibd2_ibd(distans, matrix):
    end = 0
    sum = 0
    new_row = [0,0,0,0]
-   while (i<len(distans)):
-      if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 0):
-               if ((i + 1 < len(distans) and distans[i] == 2 and distans[i + 1] == 0 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 0
-                  i = i + 1
-                  end = i
 
-               else:
-                  break
-            else:
-               if((i+2<len(distans) and distans[i+1] != 2 and distans[i+2] !=0) or (i+2 == len(distans) and distans[i+1] != 0 and start == i)) :
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i < len(distans)):
-      if (distans[i] != 2 and cromozom[end + 1] == cromozom[end] and i + 1 < len(distans)):
-         start = i
-         end = i
-         while (i + 1 < len(distans) and cromozom[end + 1] == cromozom[end]):
-            if (distans[i] == 2):
-               if ((i + 1 < len(distans) and distans[i] == 2 and distans[i + 1] != 2 and cromozom[i + 1] == cromozom[end])):
-                  distans[i] = 1
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if ((i + 2 < len(distans) and distans[i + 1] != 2 and distans[i + 2] == 2) or (
-                       i + 2 == len(distans) and distans[i + 1] == 2 and start == i)):
-                  break
-               else:
-                  i = i + 1
-                  end = i
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-      S1 = ""
-      S2 = ""
-      if (distans[i] == 2  and i+1<len(distans)  and cromozom[end+1] == cromozom[end]):
-         start = i
-         end = i
-
-         while (i+1 < len(distans) and cromozom[i+1] == cromozom[end]):
-            if (distans[i] != 2):
-
-               if ((i + 1 < len(distans) and distans[i] != 2 and distans[i + 1] == 2 and cromozom[i+1] == cromozom[end])):
-
-                  distans[i] = 2
-                  snp_cow1[i] = "AA"
-                  snp_cow2[i] = "AA"
-                  i = i + 1
-                  end = i
-               else:
-                  break
-            else:
-               if((i+2 < len(distans) and distans[i+1] != 2 and distans[i+2] != 2  and cromozom[i+1] != cromozom[end]) or
-                  (i+2 < len(distans) and distans[i + 1] != 2 and distans[i + 2] != 2 and  cromozom[i+1] == cromozom[end]) or
-                  ( i+2 == len(distans) and distans[i+1] != 2 and start == i)) :
-                  distans[start]=1
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      elif((i+1<len(distans) and distans[i] == 2 and cromozom[end+1] != cromozom[end]) or (distans[i] == 2 and i+1 == len(distans))):
-         distans[i] =1
-
-      if(end != start):
-
-         for k in range(start, end+1):
-            S1 += str(snp_cow1[k][0])
-            S2 += str(snp_cow1[k][1])
-         #print(S1)
-         #print(S2)
-         if (S1 != ""):
-            if (S1 == S2):
-               counter = int(matrix[1][end]) - int(matrix[1][start])
-               if (counter < 1200000):
-                  for k in range(start, end + 1):
-                     distans[k] = 1
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[0] += 1
-                  sum += counter
-            else:
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 1
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[1] += 1
-                  sum += counter
-      elif(i==start and start != 0):
-         distans[start] = 1
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-
-      if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 0):
-               if ((i + 1 < len(distans) and distans[i] == 1 and distans[i + 1] == 0 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 0
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if((i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=0) or (i+2 == len(distans) and distans[i+1] != 0 and start == i)) :
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      elif((i+1<len(distans) and distans[i] == 2 and cromozom[end+1] != cromozom[end]) or (distans[i] == 2 and i+1 == len(distans))):
-         distans[i] =1
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-      S1 = ""
-      S2 = ""
-      S3 = ""
-      if ((distans[i] == 1 and i+1<len(distans) and cromozom[end+1] == cromozom[end])):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 1):
-               if ((i + 1 < len(distans) and distans[i] == 0 and distans[i + 1] == 1 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 1
-                  snp_cow1[i] = "AA"
-                  snp_cow2[i] = "AA"
-                  i = i + 1
-                  end = i
-               else:
-                  break
-            else:
-
-               if((i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] != cromozom[end] )
-                       or (i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] == cromozom[end]) or
-                       (i+2 == len(distans) and distans[i+1] != 1 and start == i)) :
-                  distans[start]=1
-                  break
-               else:
-
-                  i = i + 1
-                  end = i
-
-      elif((i+1<len(distans) and distans[i] == 1 and cromozom[end+1] != cromozom[end]) or (distans[i] == 1 and i+1 == len(distans))):
-         distans[i] =0
-
-
-      if(start != end):
-
-         for k in range(start, end + 1):
-            if (snp_cow1[k][0] == snp_cow2[k][0]):
-               S1 += str(snp_cow1[k][0])
-               S2 += str(snp_cow1[k][1])
-               S3 += str(snp_cow2[k][1])
-            elif (snp_cow1[k][0] == snp_cow2[k][1]):
-               S1 += str(snp_cow1[k][0])
-               S2 += str(snp_cow1[k][1])
-               S3 += str(snp_cow2[k][0])
-            elif (snp_cow1[k][1] == snp_cow2[k][0]):
-               S1 += str(snp_cow1[k][1])
-               S2 += str(snp_cow1[k][0])
-               S3 += str(snp_cow2[k][1])
-            elif (snp_cow1[k][1] == snp_cow2[k][1]):
-               S1 += str(snp_cow1[k][1])
-               S2 += str(snp_cow1[k][0])
-               S3 += str(snp_cow2[k][0])
-
-
-         if (S1 != ""):
-            if (S1 == S2 or S1 == S3):
-
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
-
-               if (counter < 1200000):
-                  for k in range(start, end + 1):
-                     distans[k] = 0
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[2] += 1
-                  sum += counter
-            else:
-               counter = 0.25 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 5000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 0
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[3] += 1
-                  sum += counter
-      elif(start==i and distans[start]!=-1):
-         distans[start] = 0
-
-
-
-      i = i + 1
-      start = 0
-      end = 0
-
-   print(new_row)
-   #print(sum/float(1000000000))
-   return sum
-
-def matrix_Equals(aoa ,aoa_num, index):
-   i = index[0]
-   j = index[1]
-   new_row = []
-   new_row.append([row[0] for row in aoa])
-   new_row.append([row[1] for row in aoa])
-   new_row.append([row[i] for row in aoa])
-   new_row.append([row[j] for row in aoa])
-   dis = ArrayEquals([row[i-2] for row in aoa_num], [row[j-2] for row in aoa_num])
-   x = runs_ibd2_ibd(dis,new_row)
-   return (x)
-
-
-def runs_ibd2_ibd2(distans, matrix):
-   cromozom = matrix[0]
-   snp_cow1 = matrix[2]
-   snp_cow2 = matrix[3]
-   i = 0
-   start = 0
-   end = 0
-   sum = 0
-   new_row = [0,0,0,0]
-   while (i<len(distans)):
-      if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 0):
-               if ((i + 1 < len(distans) and distans[i] == 2 and distans[i + 1] == 0 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 0
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if((i+2<len(distans) and distans[i+1] != 2 and distans[i+2] !=0) or (i+2 == len(distans) and distans[i+1] != 0 and start == i)) :
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i < len(distans)):
-      if (distans[i] != 2 and cromozom[end + 1] == cromozom[end] and i + 1 < len(distans)):
-         start = i
-         end = i
-         while (i + 1 < len(distans) and cromozom[end + 1] == cromozom[end]):
-            if (distans[i] == 2):
-               if ((i + 1 < len(distans) and distans[i] == 2 and distans[i + 1] != 2 and cromozom[i + 1] == cromozom[end])):
-                  distans[i] = 1
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if ((i + 2 < len(distans) and distans[i + 1] != 2 and distans[i + 2] == 2) or (
-                       i + 2 == len(distans) and distans[i + 1] == 2 and start == i)):
-                  break
-               else:
-                  i = i + 1
-                  end = i
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-      S1 = ""
-      S2 = ""
-      if (distans[i] == 2  and i+1<len(distans)  and cromozom[end+1] == cromozom[end]):
-         start = i
-         end = i
-
-         while (i+1 < len(distans) and cromozom[i+1] == cromozom[end]):
-            if (distans[i] != 2):
-
-               if ((i + 1 < len(distans) and distans[i] != 2 and distans[i + 1] == 2 and cromozom[i+1] == cromozom[end])):
-
-                  distans[i] = 2
-                  snp_cow1[i] = "AA"
-                  snp_cow2[i] = "AA"
-                  i = i + 1
-                  end = i
-               else:
-                  break
-            else:
-               if((i+2 < len(distans) and distans[i+1] != 2 and distans[i+2] != 2  and cromozom[i+1] != cromozom[end]) or
-                  (i+2 < len(distans) and distans[i + 1] != 2 and distans[i + 2] != 2 and  cromozom[i+1] == cromozom[end]) or
-                  ( i+2 == len(distans) and distans[i+1] != 2 and start == i)) :
-                  distans[start]=1
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      elif((i+1<len(distans) and distans[i] == 2 and cromozom[end+1] != cromozom[end]) or (distans[i] == 2 and i+1 == len(distans))):
-         distans[i] =1
-
-      if(end != start):
-
-         for k in range(start, end+1):
-            S1 += str(snp_cow1[k][0])
-            S2 += str(snp_cow1[k][1])
-         #print(S1)
-         #print(S2)
-         if (S1 != ""):
-            if (S1 == S2):
-               counter = int(matrix[1][end]) - int(matrix[1][start])
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 1
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[0] += 1
-                  sum += counter
-            else:
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 1
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[1] += 1
-                  sum += counter
-      elif(i==start and start != 0):
-         distans[start] = 1
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-
-      if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 0):
-               if ((i + 1 < len(distans) and distans[i] == 1 and distans[i + 1] == 0 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 0
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if((i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=0) or (i+2 == len(distans) and distans[i+1] != 0 and start == i)) :
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      elif((i+1<len(distans) and distans[i] == 2 and cromozom[end+1] != cromozom[end]) or (distans[i] == 2 and i+1 == len(distans))):
-         distans[i] =1
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-      S1 = ""
-      S2 = ""
-      S3 = ""
-      if ((distans[i] == 1 and i+1<len(distans) and cromozom[end+1] == cromozom[end])):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 1):
-               if ((i + 1 < len(distans) and distans[i] == 0 and distans[i + 1] == 1 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 1
-                  snp_cow1[i] = "AA"
-                  snp_cow2[i] = "AA"
-                  i = i + 1
-                  end = i
-               else:
-                  break
-            else:
-
-               if((i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] != cromozom[end] )
-                       or (i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] == cromozom[end]) or
-                       (i+2 == len(distans) and distans[i+1] != 1 and start == i)) :
-                  distans[start]=1
-                  break
-               else:
-
-                  i = i + 1
-                  end = i
-
-      elif((i+1<len(distans) and distans[i] == 1 and cromozom[end+1] != cromozom[end]) or (distans[i] == 1 and i+1 == len(distans))):
-         distans[i] =0
-
-
-      if(start != end):
-
-         for k in range(start, end + 1):
-            if (snp_cow1[k][0] == snp_cow2[k][0]):
-               S1 += str(snp_cow1[k][0])
-               S2 += str(snp_cow1[k][1])
-               S3 += str(snp_cow2[k][1])
-            elif (snp_cow1[k][0] == snp_cow2[k][1]):
-               S1 += str(snp_cow1[k][0])
-               S2 += str(snp_cow1[k][1])
-               S3 += str(snp_cow2[k][0])
-            elif (snp_cow1[k][1] == snp_cow2[k][0]):
-               S1 += str(snp_cow1[k][1])
-               S2 += str(snp_cow1[k][0])
-               S3 += str(snp_cow2[k][1])
-            elif (snp_cow1[k][1] == snp_cow2[k][1]):
-               S1 += str(snp_cow1[k][1])
-               S2 += str(snp_cow1[k][0])
-               S3 += str(snp_cow2[k][0])
-
-
-         if (S1 != ""):
-            if (S1 == S2 or S1 == S3):
-
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
-
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 0
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[2] += 1
-                  sum += counter
-            else:
-               counter = 0.25 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 0
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[3] += 1
-                  sum += counter
-      elif(start==i and distans[start]!=-1):
-         distans[start] = 0
-
-
-
-      i = i + 1
-      start = 0
-      end = 0
-
-   print(new_row)
-   #print(sum/float(1000000000))
-   return sum
-
-def matrix_Equals2(aoa ,aoa_num, index):
-   i = index[0]
-   j = index[1]
-   new_row = []
-   new_row.append([row[0] for row in aoa])
-   new_row.append([row[1] for row in aoa])
-   new_row.append([row[i] for row in aoa])
-   new_row.append([row[j] for row in aoa])
-   dis = ArrayEquals([row[i-2] for row in aoa_num], [row[j-2] for row in aoa_num])
-   x = runs_ibd2_ibd2(dis,new_row)
-   return (x)
-
-
-def runs_ibd2_ibd5(distans, matrix):
-   cromozom = matrix[0]
-   snp_cow1 = matrix[2]
-   snp_cow2 = matrix[3]
-   i = 0
-   start = 0
-   end = 0
-   sum = 0
-   new_row = [0,0,0,0]
-   while (i<len(distans)):
-      if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 0):
-               if ((i + 1 < len(distans) and distans[i] == 2 and distans[i + 1] == 0 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 0
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if((i+2<len(distans) and distans[i+1] != 2 and distans[i+2] !=0) or (i+2 == len(distans) and distans[i+1] != 0 and start == i)) :
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i < len(distans)):
-      if (distans[i] != 2 and cromozom[end + 1] == cromozom[end] and i + 1 < len(distans)):
-         start = i
-         end = i
-         while (i + 1 < len(distans) and cromozom[end + 1] == cromozom[end]):
-            if (distans[i] == 2):
-               if ((i + 1 < len(distans) and distans[i] == 2 and distans[i + 1] != 2 and cromozom[i + 1] == cromozom[end])):
-                  distans[i] = 1
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if ((i + 2 < len(distans) and distans[i + 1] != 2 and distans[i + 2] == 2) or (
-                       i + 2 == len(distans) and distans[i + 1] == 2 and start == i)):
-                  break
-               else:
-                  i = i + 1
-                  end = i
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-      S1 = ""
-      S2 = ""
-      if (distans[i] == 2  and i+1<len(distans)  and cromozom[end+1] == cromozom[end]):
-         start = i
-         end = i
-
-         while (i+1 < len(distans) and cromozom[i+1] == cromozom[end]):
-            if (distans[i] != 2):
-
-               if ((i + 1 < len(distans) and distans[i] != 2 and distans[i + 1] == 2 and cromozom[i+1] == cromozom[end])):
-
-                  distans[i] = 2
-                  snp_cow1[i] = "AA"
-                  snp_cow2[i] = "AA"
-                  i = i + 1
-                  end = i
-               else:
-                  break
-            else:
-               if((i+2 < len(distans) and distans[i+1] != 2 and distans[i+2] != 2  and cromozom[i+1] != cromozom[end]) or
-                  (i+2 < len(distans) and distans[i + 1] != 2 and distans[i + 2] != 2 and  cromozom[i+1] == cromozom[end]) or
-                  ( i+2 == len(distans) and distans[i+1] != 2 and start == i)) :
-                  distans[start]=1
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      elif((i+1<len(distans) and distans[i] == 2 and cromozom[end+1] != cromozom[end]) or (distans[i] == 2 and i+1 == len(distans))):
-         distans[i] =1
-
-      if(end != start):
-
-         for k in range(start, end+1):
-            S1 += str(snp_cow1[k][0])
-            S2 += str(snp_cow1[k][1])
-         #print(S1)
-         #print(S2)
-         if (S1 != ""):
-            if (S1 == S2):
-               counter = int(matrix[1][end]) - int(matrix[1][start])
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 1
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[0] += 1
-                  sum += counter
-            else:
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 1
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[1] += 1
-                  sum += counter
-      elif(i==start and start != 0):
-         distans[start] = 1
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-
-      if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 0):
-               if ((i + 1 < len(distans) and distans[i] == 1 and distans[i + 1] == 0 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 0
-                  i = i + 1
-                  end = i
-
-               else:
-                  break
-            else:
-               if((i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=0) or (i+2 == len(distans) and distans[i+1] != 0 and start == i)) :
-                  break
-               else:
-                  i = i + 1
-                  end = i
-      elif((i+1<len(distans) and distans[i] == 2 and cromozom[end+1] != cromozom[end]) or (distans[i] == 2 and i+1 == len(distans))):
-         distans[i] =1
-
-      i = i + 1
-      start = 0
-      end = 0
-   i = 0
-
-   while (i<len(distans)):
-      S1 = ""
-      S2 = ""
-      S3 = ""
-      if ((distans[i] == 1 and i+1<len(distans) and cromozom[end+1] == cromozom[end])):
-         start = i
-         end = i
-         while (i+1 < len(distans) and cromozom[end+1] == cromozom[end]):
-            if (distans[i] != 1):
-               if ((i + 1 < len(distans) and distans[i] == 0 and distans[i + 1] == 1 and cromozom[i+1] == cromozom[end])):
-                  distans[i] = 1
-                  snp_cow1[i] = "AA"
-                  snp_cow2[i] = "AA"
-                  i = i + 1
-                  end = i
-               else:
-                  break
-            else:
-
-               if((i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] != cromozom[end] )
-                       or (i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] == cromozom[end]) or
-                       (i+2 == len(distans) and distans[i+1] != 1 and start == i)) :
-                  distans[start]=1
-                  break
-               else:
-
-                  i = i + 1
-                  end = i
-
-      elif((i+1<len(distans) and distans[i] == 1 and cromozom[end+1] != cromozom[end]) or (distans[i] == 1 and i+1 == len(distans))):
-         distans[i] =0
-
-
-      if(start != end):
-
-         for k in range(start, end + 1):
-            if (snp_cow1[k][0] == snp_cow2[k][0]):
-               S1 += str(snp_cow1[k][0])
-               S2 += str(snp_cow1[k][1])
-               S3 += str(snp_cow2[k][1])
-            elif (snp_cow1[k][0] == snp_cow2[k][1]):
-               S1 += str(snp_cow1[k][0])
-               S2 += str(snp_cow1[k][1])
-               S3 += str(snp_cow2[k][0])
-            elif (snp_cow1[k][1] == snp_cow2[k][0]):
-               S1 += str(snp_cow1[k][1])
-               S2 += str(snp_cow1[k][0])
-               S3 += str(snp_cow2[k][1])
-            elif (snp_cow1[k][1] == snp_cow2[k][1]):
-               S1 += str(snp_cow1[k][1])
-               S2 += str(snp_cow1[k][0])
-               S3 += str(snp_cow2[k][0])
-
-
-         if (S1 != ""):
-            if (S1 == S2 or S1 == S3):
-
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
-
-               if (counter < 1000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 0
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[2] += 1
-                  sum += counter
-            else:
-               counter = 0.25 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 3000000):
-                  for k in range(start, end + 1):
-                     distans[k] = 0
-               else:
-                  for k in range(start, end + 1):
-                     distans[k] = -1
-                  new_row[3] += 1
-                  sum += counter
-      elif(start==i and distans[start]!=-1):
-         distans[start] = 0
-
-
-
-      i = i + 1
-      start = 0
-      end = 0
-
-   print(new_row)
-   #print(sum/float(1000000000))
-   return sum
-
-def matrix_Equals5(aoa ,aoa_num, index):
-   i = index[0]
-   j = index[1]
-   new_row = []
-   new_row.append([row[0] for row in aoa])
-   new_row.append([row[1] for row in aoa])
-   new_row.append([row[i] for row in aoa])
-   new_row.append([row[j] for row in aoa])
-   dis = ArrayEquals([row[i-2] for row in aoa_num], [row[j-2] for row in aoa_num])
-   x = runs_ibd2_ibd5(dis,new_row)
-   return (x)
-
-
-def runs_ibd2_ibd1(distans, matrix):
-   cromozom = matrix[0]
-   snp_cow1 = matrix[2]
-   snp_cow2 = matrix[3]
-   i = 0
-   start = 0
-   end = 0
-   sum = 0
-   new_row = [0,0,0,0]
    while (i<len(distans)):
       if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
          start = i
@@ -1339,8 +558,9 @@ def runs_ibd2_ibd1(distans, matrix):
          #print(S2)
          if (S1 != ""):
             if (S1 == S2):
-               counter = int(matrix[1][end]) - int(matrix[1][start])
-               if (counter < 1000000):
+               counter = (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
+
+               if (counter < 1.0):
                   for k in range(start, end + 1):
                      distans[k] = 1
                else:
@@ -1348,24 +568,27 @@ def runs_ibd2_ibd1(distans, matrix):
                      distans[k] = -1
                   new_row[0] += 1
                   sum += counter
+
             else:
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 1000000):
+               counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
+
+               if (counter < 1.0):
                   for k in range(start, end + 1):
                      distans[k] = 1
                else:
                   for k in range(start, end + 1):
                      distans[k] = -1
                   new_row[1] += 1
-                  sum += counter
+                  sum += (0.5 * counter)
+
       elif(i==start and start != 0):
          distans[start] = 1
 
       i = i + 1
       start = 0
       end = 0
-   i = 0
 
+   i = 0
    while (i<len(distans)):
 
       if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
@@ -1451,29 +674,30 @@ def runs_ibd2_ibd1(distans, matrix):
          if (S1 != ""):
             if (S1 == S2 or S1 == S3):
 
-               counter = 0.5 * (int(matrix[1][end]) - int(matrix[1][start]))
+               counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
 
-               if (counter < 1000000):
+               if (counter < 1.0):
                   for k in range(start, end + 1):
                      distans[k] = 0
                else:
                   for k in range(start, end + 1):
                      distans[k] = -1
                   new_row[2] += 1
-                  sum += counter
+                  sum += (0.5 * counter)
             else:
-               counter = 0.25 * (int(matrix[1][end]) - int(matrix[1][start]))
-               if (counter < 4000000):
+               counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
+
+               if (counter < 1.0):
                   for k in range(start, end + 1):
                      distans[k] = 0
                else:
                   for k in range(start, end + 1):
                      distans[k] = -1
                   new_row[3] += 1
-                  sum += counter
+                  sum += (counter * 0.25)
+
       elif(start==i and distans[start]!=-1):
          distans[start] = 0
-
 
 
       i = i + 1
@@ -1481,10 +705,10 @@ def runs_ibd2_ibd1(distans, matrix):
       end = 0
 
    print(new_row)
-   #print(sum/float(1000000000))
-   return sum / float(1000000000)
 
-def matrix_Equals1(aoa ,aoa_num, index):
+   return sum
+
+def matrix_Equals(aoa ,aoa_num, index):
    i = index[0]
    j = index[1]
    new_row = []
@@ -1493,8 +717,10 @@ def matrix_Equals1(aoa ,aoa_num, index):
    new_row.append([row[i] for row in aoa])
    new_row.append([row[j] for row in aoa])
    dis = ArrayEquals([row[i-2] for row in aoa_num], [row[j-2] for row in aoa_num])
-   x = runs_ibd2_ibd1(dis,new_row)
+   x = runs_ibd1_ibd2(dis,new_row)
    return (x)
+
+
 
 def selectTWO(aoa,Cow,Sire):
    cow = -2
@@ -1511,13 +737,13 @@ def selectTWO(aoa,Cow,Sire):
 
 def madadim():
    df = pd.read_excel('Moran_cows_if.xlsx')
-   #new_roh = []
+   new_roh = []
    x = new_matrix(aoa)
-   #for i in range(len(df["Cow"])):
-    #  y = selectTWO(aoa_all, df["Dam"][i], df["Sire"][i])
-    #  roh_list = matrix_Equals1(aoa_for_roh, x, y)
-    #  new_roh.append(roh_list)
-    #df["ibd1&2"] = new_roh
+   for i in range(len(df["Cow"])):
+      y = selectTWO(aoa_all, df["Dam"][i], df["Sire"][i])
+      roh_list = matrix_Equals(aoa_for_roh, x, y)
+      new_roh.append(roh_list)
+   df["expect-roh-3"] = new_roh
 
    new_roh = []
    for i in range(len(df["Cow"])):
@@ -1539,27 +765,8 @@ def madadim():
       roh_list = roh_individual(aoa_for_roh,x, y)
       new_roh.append(roh_list)
    df["ROH-DAM"] = new_roh
-   df.to_excel("ROH4.xlsx")
+   df.to_excel("3.xlsx")
 
 #madadim()
 
-
-def pred():
-   df = pd.read_excel('Moran_cows_if.xlsx')
-   x = new_matrix(aoa)
-   roh_low = []
-   roh_high = []
-   for i in range(len(df["Cow"])):
-      y = select_pair(aoa_all, df["Dam"][i], df["Sire"][i])
-      low = predictGen_low(x, y)
-      high = predictGen_high(x, y)
-      pred_low = pred_roh(aoa_for_roh, low)
-      pred_high = pred_roh(aoa_for_roh, high)
-      roh_low.append(pred_low)
-      roh_high.append(pred_high)
-   df["ROH-low"] = roh_low
-   df["ROH-high"] = roh_high
-   df.to_excel("ROW_PRED.xlsx")
-
-#pred()
 
