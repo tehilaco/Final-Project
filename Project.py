@@ -3,11 +3,6 @@ import csv
 import numpy as np
 import pandas as pd
 
-df = pd.read_excel('Moran_cows_if.xlsx')
-new_roh = []
-
-
-
 def csvFileToAOA(fileName):
    with open(fileName) as csv_file:
       csv_reader = csv.reader(csv_file, delimiter=',')
@@ -96,10 +91,9 @@ aoa = mergepairs(aoa_all)
 
 def num_of_app(aoa):
 
-   new_name = ["AA", "GG", "CC", "TT", "AG", "AC", "AT", "GT", "GT", "CT", ""]
+   new_name = ["AA", "GG", "CC", "TT", "AG", "AC", "AT", "GC", "GT", "CT", ""]
    new_aoa = []
    new_aoa.append(new_name)
-
    for row in aoa:
       maxi = 0
       new_row = [0,0,0,0,0,0,0,0,0,0,0]
@@ -132,7 +126,6 @@ def num_of_app(aoa):
       for i in new_row[0:9]:
          if(i>=maxi):
             maxi=i
-
 
       for i in range(len(new_row)):
          if (new_row[i] == maxi):
@@ -170,7 +163,7 @@ def Equals(cow1,cow2):
          if((cow1[i] == 1 and cow2[i] == 0) or (cow1[i] == 0 and cow2[i] == 1)):
             counter += 1
             continue
-   print(counter)
+
    return counter
 
 def IBS(aoa_num , index ):
@@ -233,17 +226,19 @@ def IbdForPair(individualONE,individualTWO):
 
 def IBD(aoa_num , index):
    i = index[0]
-
    j = index[1]
    p = pc(aoa_num)
    counterP = sumP(p)
    X = [row[i-2] for row in aoa_num]
    Y = [row[j-2] for row in aoa_num]
+
    x = 0.5 - (IbdForPair(X, Y))/(4*float(counterP))
    return x
 
 def new_matrix(aoa1):
+
    aoa = num_of_app(aoa1)
+
    new_matrix = []
    j = 0
    for row in aoa[1:]:
@@ -261,6 +256,7 @@ def new_matrix(aoa1):
          for i in range(4, 10):
             if (row[i] != 0):
                a = aoa[0][i]
+
                index_maxi = aoa[0][row[10]]
                break
       for row1 in aoa1[j:j+1]:
@@ -284,13 +280,165 @@ def new_matrix(aoa1):
 
 #print(new_matrix(aoa))
 
+def counter_ibs(cow1,cow2 , num):
+   counter = 0
+   if(num == 0):
+      for i in range(len(cow1)):
+         if ((cow1[i] == 2 and cow2[i] == 0) or (cow1[i] == 0 and cow2[i] == 2)):
+            counter += 1
+         else:
+            counter += 0
+   elif(num == 1):
+      for i in range(len(cow1)):
+         if ((cow1[i] == 2 and cow2[i] == 1) or (cow1[i] == 1 and cow2[i] == 2)
+         or (cow1[i] == 1 and cow2[i] == 0) or (cow1[i] == 0 and cow2[i] == 1)):
+            counter += 1
+         else:
+            counter += 0
+   else:
+      for i in range(len(cow1)):
+         if (cow1[i] == cow2[i]):
+            counter += 1
+         else:
+            counter += 0
+
+   return counter
+
+def pq00(aoa):
+   counter = 0
+   for row in aoa:
+      p = 0
+      q = 0
+      for i in range(len(row)):
+         p += row[i]
+      q = 2*len(row) - p
+      x = p / float(2 * len(row))
+      y = q / float(2 * len(row))
+      counter += 2*x*x*y*y
+   return counter
+def pq10(aoa):
+   new_p = []
+   new_q = []
+   counter = 0
+   for row in aoa:
+      p = 0
+      q = 0
+      for i in range(len(row)):
+         p += row[i]
+      q = 2*len(row) - p
+      x = p / float(2 * len(row))
+      y = q / float(2 * len(row))
+      counter += 4*x*x*x*y + 4*y*y*y*x
+   return counter
+def pq11(aoa):
+
+   counter = 0
+   for row in aoa:
+      p = 0
+      q = 0
+      for i in range(len(row)):
+         p += row[i]
+      q = 2*len(row) - p
+      x = p / float(2 * len(row))
+      y = q / float(2 * len(row))
+      counter += 2*x*x*y + 2*y*y*x
+   return counter
+def pq21(aoa):
+   counter = 0
+   for row in aoa:
+      p = 0
+      q = 0
+      for i in range(len(row)):
+         p += row[i]
+      q = 2*len(row) - p
+      x = p / float(2 * len(row))
+      y = q / float(2 * len(row))
+      counter +=  x*x*x + y*y*y + x*x*y + y*y*x
+   return counter
+def pq22(aoa):
+
+   counter = 0
+   for row in aoa:
+      p = 0
+      for i in range(len(row)):
+         p += row[i]
+      counter += 1
+   return counter
+def pq20(aoa):
+
+   counter = 0
+   for row in aoa:
+      p = 0
+      q = 0
+      for i in range(len(row)):
+         p += row[i]
+      q = 2*len(row) - p
+      x = p / float(2*len(row))
+      y = q / float(2*len(row))
+      counter += x*x*x*x + y*y*y*y + 4*x*x*y*y
+   return counter
+
+
+def P_IBS0(aoa_num , index ):
+   i = index[0]
+   j = index[1]
+   cow = [row[i-2] for row in aoa_num]
+   sire = [row[j-2] for row in aoa_num]
+   N0 = counter_ibs(cow,sire , 0)
+   return N0
+def P_IBS1(aoa_num , index ):
+   i = index[0]
+   j = index[1]
+   cow = [row[i-2] for row in aoa_num]
+   sire = [row[j-2] for row in aoa_num]
+   N1 = counter_ibs(cow,sire , 1)
+   return N1
+def P_IBS2(aoa_num , index ):
+   i = index[0]
+   j = index[1]
+   cow = [row[i-2] for row in aoa_num]
+   sire = [row[j-2] for row in aoa_num]
+
+   N2 = counter_ibs(cow,sire , 2)
+
+   return N2
+
+#print(new_matrix(aoa))
+
+#pANDq(new_matrix(aoa))
+
+
+def new_ibd():
+   df = pd.read_excel('Moran_cows_if.xlsx')
+   new_ibs = []
+
+   x = new_matrix(aoa)
+   z = pq00(x)
+   G = pq10(x)
+   h = pq11(x)
+   j = pq21(x)
+   k = pq22(x)
+   f = pq20(x)
+   for i in range(len(df["Cow"])):
+      y = select_pair(aoa_all, df["Dam"][i], df["Sire"][i])
+      Z_0 = P_IBS0(x, y) / z
+      Z_1 = (P_IBS1(x, y) - Z_0*G) / h
+      Z_2 = (P_IBS2(x,y) - Z_0*f - Z_1*j) / k
+      new_ibs.append(Z_2)
+
+   df["IBD_new"] = new_ibs
+   df.to_excel("new.xlsx")
+
+#new_ibd()
+
 def threeMadadim():
    df = pd.read_excel('Moran_cows_if.xlsx')
    new_ibs = []
    new_ibd = []
    new_ha = []
-   x = new_matrix(aoa)
+   i=0
    for i in range(len(df["Cow"])):
+      print(i)
       y = select_pair(aoa_all, df["Dam"][i], df["Sire"][i])
       ibs_list = IBS(x, y)
       new_ibs.append(ibs_list)
@@ -306,6 +454,8 @@ def threeMadadim():
 
    df.to_excel("treeMA.xlsx")
 
+#threeMadadim()
+
 def location_dam(aoa,Dam):
    dam = -2
    counter = -2
@@ -316,35 +466,7 @@ def location_dam(aoa,Dam):
          dam = counter
    return dam
 
-def predictGen_low(aoa_num, index):
-   i = index[0]
-   j = index[1]
-   dam = [row[i - 2] for row in aoa_num]
-   sire = [row[j - 2] for row in aoa_num]
-   cow = []
-   for i in range(len(dam)):
-      if (dam[i] == sire[i]):
-         cow.append(dam[i])
-      else:
-         cow.append(1)
-   return cow
-
-def predictGen_high(aoa_num, index):
-   i = index[0]
-   j = index[1]
-   dam = [row[i - 2] for row in aoa_num]
-   sire = [row[j - 2] for row in aoa_num]
-   cow = []
-   for i in range(len(dam)):
-      if (dam[i] == sire[i]):
-         cow.append(dam[i])
-      else:
-         cow.append(2)
-   return cow
-
-
 def ArrayEquals(cow1,cow2):
-
    distan = np.zeros((len(cow1)))
    for i in range(len(cow1)):
       if (cow1[i] == cow2[i]):
@@ -369,10 +491,9 @@ def roh_individual(aoa,aoa_num, k):
    counter = 0
    end = 0
    i=0
-
+   #start_crom = new_roh[1][0]
 
    while (i<len(new_row[2])):
-
       if (new_row[2][i] != 1  and i+1<len(new_row[2]) and new_row[0][end+1] == new_row[0][end]):
          start = i
          end = i
@@ -401,35 +522,33 @@ def roh_individual(aoa,aoa_num, k):
       end = 0
 
 
-
    if (new_row[2][0] == 2 or new_row[2][0] == 0):
       flagOne = -1
    for j in range(1, len(new_row[0])):
       if (new_row[0][j] == new_row[0][flagOne + 1]):
          if (j+1 < len(new_row[2]) and new_row[2][j] == 1  ):
             if (j != flagOne + 1):
-               x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
 
-               if (x > 1.0):
+               x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
+               if (x >= 1):
                    counter += x
                flagOne = j
             else:
                flagOne = j
          else:
             if (j == len(new_row[0]) - 1 or new_row[0][j] != new_row[0][j + 1]):
+
+
                x = (int(new_row[1][j]) - int(new_row[1][flagOne + 1])) / float(1000000)
-
-               if ( x > 1.0):
+               if ( x >= 1):
                   counter += x
-
                flagOne = j
       else:
+
          if (new_row[2][j] == 0 or new_row[2][j] == 2):
             x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
-
-            if (x > 1.0):
+            if (x >= 1):
                 counter += x
-
          flagOne = j - 1
 
    return counter
@@ -460,16 +579,16 @@ def merge_max_gen(aoa,arr):
 
 aoa_for_roh = merge_max_gen(aoa_all,max_show(aoa))
 
-def runs_ibd1_ibd2(distans, matrix):
+def expect_roh(distans, matrix):
    cromozom = matrix[0]
    snp_cow1 = matrix[2]
    snp_cow2 = matrix[3]
+
    i = 0
    start = 0
    end = 0
    sum = 0
    new_row = [0,0,0,0]
-
    while (i<len(distans)):
       if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
          start = i
@@ -493,7 +612,6 @@ def runs_ibd1_ibd2(distans, matrix):
       start = 0
       end = 0
    i = 0
-
    while (i < len(distans)):
       if (distans[i] != 2 and cromozom[end + 1] == cromozom[end] and i + 1 < len(distans)):
          start = i
@@ -519,14 +637,12 @@ def runs_ibd1_ibd2(distans, matrix):
       start = 0
       end = 0
    i = 0
-
    while (i<len(distans)):
       S1 = ""
       S2 = ""
       if (distans[i] == 2  and i+1<len(distans)  and cromozom[end+1] == cromozom[end]):
          start = i
          end = i
-
          while (i+1 < len(distans) and cromozom[i+1] == cromozom[end]):
             if (distans[i] != 2):
                if ((i + 1 < len(distans) and distans[i] != 2 and distans[i + 1] == 2 and cromozom[i+1] == cromozom[end])):
@@ -544,6 +660,9 @@ def runs_ibd1_ibd2(distans, matrix):
                   distans[start]=1
                   break
                else:
+                  distans[i+1] = 2
+                  snp_cow1[i+1] = "AA"
+                  snp_cow2[i+1] = "AA"
                   i = i + 1
                   end = i
       elif((i+1<len(distans) and distans[i] == 2 and cromozom[end+1] != cromozom[end]) or (distans[i] == 2 and i+1 == len(distans))):
@@ -554,13 +673,11 @@ def runs_ibd1_ibd2(distans, matrix):
          for k in range(start, end+1):
             S1 += str(snp_cow1[k][0])
             S2 += str(snp_cow1[k][1])
-         #print(S1)
-         #print(S2)
+
          if (S1 != ""):
             if (S1 == S2):
                counter = (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
-
-               if (counter < 1.0):
+               if (counter < 2.0):
                   for k in range(start, end + 1):
                      distans[k] = 1
                else:
@@ -568,11 +685,9 @@ def runs_ibd1_ibd2(distans, matrix):
                      distans[k] = -1
                   new_row[0] += 1
                   sum += counter
-
             else:
-               counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
-
-               if (counter < 1.0):
+               counter = (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
+               if (counter < 2.0):
                   for k in range(start, end + 1):
                      distans[k] = 1
                else:
@@ -587,10 +702,8 @@ def runs_ibd1_ibd2(distans, matrix):
       i = i + 1
       start = 0
       end = 0
-
    i = 0
    while (i<len(distans)):
-
       if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
          start = i
          end = i
@@ -616,7 +729,6 @@ def runs_ibd1_ibd2(distans, matrix):
       start = 0
       end = 0
    i = 0
-
    while (i<len(distans)):
       S1 = ""
       S2 = ""
@@ -635,20 +747,18 @@ def runs_ibd1_ibd2(distans, matrix):
                else:
                   break
             else:
-
                if((i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] != cromozom[end] )
                        or (i+2<len(distans) and distans[i+1] != 1 and distans[i+2] !=1 and cromozom[i+1] == cromozom[end]) or
                        (i+2 == len(distans) and distans[i+1] != 1 and start == i)) :
                   distans[start]=1
                   break
                else:
-
                   i = i + 1
                   end = i
 
+
       elif((i+1<len(distans) and distans[i] == 1 and cromozom[end+1] != cromozom[end]) or (distans[i] == 1 and i+1 == len(distans))):
          distans[i] = 0
-
 
       if(start != end):
 
@@ -669,14 +779,10 @@ def runs_ibd1_ibd2(distans, matrix):
                S1 += str(snp_cow1[k][1])
                S2 += str(snp_cow1[k][0])
                S3 += str(snp_cow2[k][0])
-
-
          if (S1 != ""):
             if (S1 == S2 or S1 == S3):
-
                counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
-
-               if (counter < 1.0):
+               if (counter <2):
                   for k in range(start, end + 1):
                      distans[k] = 0
                else:
@@ -687,7 +793,7 @@ def runs_ibd1_ibd2(distans, matrix):
             else:
                counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
 
-               if (counter < 1.0):
+               if (counter < 2):
                   for k in range(start, end + 1):
                      distans[k] = 0
                else:
@@ -703,9 +809,7 @@ def runs_ibd1_ibd2(distans, matrix):
       i = i + 1
       start = 0
       end = 0
-
    print(new_row)
-
    return sum
 
 def matrix_Equals(aoa ,aoa_num, index):
@@ -717,9 +821,8 @@ def matrix_Equals(aoa ,aoa_num, index):
    new_row.append([row[i] for row in aoa])
    new_row.append([row[j] for row in aoa])
    dis = ArrayEquals([row[i-2] for row in aoa_num], [row[j-2] for row in aoa_num])
-   x = runs_ibd1_ibd2(dis,new_row)
+   x = expect_roh(dis,new_row)
    return (x)
-
 
 
 def selectTWO(aoa,Cow,Sire):
@@ -739,6 +842,7 @@ def madadim():
    df = pd.read_excel('Moran_cows_if.xlsx')
    new_roh = []
    x = new_matrix(aoa)
+
    for i in range(len(df["Cow"])):
       y = selectTWO(aoa_all, df["Dam"][i], df["Sire"][i])
       roh_list = matrix_Equals(aoa_for_roh, x, y)
@@ -765,7 +869,7 @@ def madadim():
       roh_list = roh_individual(aoa_for_roh,x, y)
       new_roh.append(roh_list)
    df["ROH-DAM"] = new_roh
-   df.to_excel("3.xlsx")
+   df.to_excel("Measures.xlsx")
 
 #madadim()
 
