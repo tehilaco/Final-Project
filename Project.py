@@ -151,6 +151,8 @@ def select_pair(aoa,Cow,Sire):
 
    return cow,sire
 
+
+
 def Equals(cow1,cow2):
    counter = 0
    for i in range(len(cow1)):
@@ -168,7 +170,6 @@ def Equals(cow1,cow2):
 
 def IBS(aoa_num , index ):
    i = index[0]
-
    j = index[1]
    cow = [row[i-2] for row in aoa_num]
    sire = [row[j-2] for row in aoa_num]
@@ -431,7 +432,10 @@ def new_ibd():
 
 #new_ibd()
 
+
+
 def threeMadadim():
+   x = new_matrix(aoa)
    df = pd.read_excel('Moran_cows_if.xlsx')
    new_ibs = []
    new_ibd = []
@@ -456,15 +460,19 @@ def threeMadadim():
 
 #threeMadadim()
 
-def location_dam(aoa,Dam):
-   dam = -2
-   counter = -2
+def location_dam(aoa,Cow):
+   cow = -3
+   counter = -3
    for row in aoa[0]:
+      if row == str(Cow):
+         cow = counter
       if row != "":
          counter += 1
-      if row == str(Dam):
-         dam = counter
-   return dam
+         continue
+
+
+   return cow
+
 
 def ArrayEquals(cow1,cow2):
    distan = np.zeros((len(cow1)))
@@ -486,19 +494,46 @@ def roh_individual(aoa,aoa_num, k):
    new_row = []
    new_row.append([row[0] for row in aoa])
    new_row.append([row[1] for row in aoa])
-   new_row.append([row[k-2] for row in aoa_num])
+   new_row.append([row[k] for row in aoa_num])
+   print(new_row[0])
+   print(new_row[1])
    flagOne = 0
    counter = 0
    end = 0
    i=0
-   #start_crom = new_roh[1][0]
-
+   print(new_row[2])
+   
    while (i<len(new_row[2])):
-      if (new_row[2][i] != 1  and i+1<len(new_row[2]) and new_row[0][end+1] == new_row[0][end]):
+      if (new_row[2][i] == 1 and new_row[0][end+1] == new_row[0][end] and i+1<len(new_row[2])):
          start = i
          end = i
+         while (i+1 < len(new_row[2]) and new_row[0][end+1] == new_row[0][end]):
+            if (new_row[2][i] != 1):
+               if ((i + 1 < len(new_row[2]) and new_row[2][i + 1] == 1 and new_row[0][i+1] == new_row[0][end])):
+                  new_row[2][i] = 1
+                  i = i + 1
+                  end = i
+               else:
+                  break
+            else:
+               if((i+2<len(new_row[2]) and new_row[2][i+1] == 1) or (i+2 == len(new_row[2]) and start == i)) :
+                  break
+               else:
+                  i = i + 1
+                  end = i
+      i = i + 1
 
+      end = 0
+   i = 0
+   
+   
+   while (i<len(new_row[2])):
+      if (new_row[2][i] != 1  and i+1<len(new_row[2]) and new_row[0][end+1] == new_row[0][end]):
+
+         start = i
+         end = i
          while (i+1 < len(new_row[2]) and new_row[0][i+1] == new_row[0][end]):
+
             if (new_row[2][i] == 1):
                if ((i + 1 < len(new_row[2]) and new_row[2][i] == 1 and new_row[2][i + 1] != 1 and new_row[0][i+1] == new_row[0][end])):
                   new_row[2][i] = 2
@@ -507,28 +542,29 @@ def roh_individual(aoa,aoa_num, k):
                else:
                   break
             else:
+
                if((i+2 < len(new_row[2]) and new_row[2][i+1] == 1 and new_row[2][i+2] == 1  and new_row[0][i+1] != new_row[0][end]) or
                   (i+2 < len(new_row[2]) and new_row[2][i + 1] == 1 and new_row[2][i + 2] == 1 and  new_row[0][i+1] == new_row[0][end]) or
-                  ( i+2 == len(new_row[2]) and new_row[2][i+1] == 1 and start == i)) :
+                  (i+2 == len(new_row[2]) and new_row[2][i+1] == 1 and start == i)) :
                   break
                else:
+
                   i = i + 1
                   end = i
-
-
-
+      if(i != 0 and new_row[2][i-1] != 1 and i+1<len(new_row[2]) and new_row[2][i] == 1 and new_row[0][i] == new_row[0][i-1] and new_row[0][i] != new_row[0][i+1]):
+         new_row[2][i]  = 2
       i = i + 1
-
       end = 0
-
+   print(new_row[2])
 
    if (new_row[2][0] == 2 or new_row[2][0] == 0):
       flagOne = -1
    for j in range(1, len(new_row[0])):
       if (new_row[0][j] == new_row[0][flagOne + 1]):
-         if (j+1 < len(new_row[2]) and new_row[2][j] == 1  ):
+         if (j+1 < len(new_row[2]) and new_row[2][j] == 1):
             if (j != flagOne + 1):
-
+               print(new_row[1][j - 1])
+               print(new_row[1][flagOne + 1])
                x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
                if (x >= 1):
                    counter += x
@@ -537,8 +573,8 @@ def roh_individual(aoa,aoa_num, k):
                flagOne = j
          else:
             if (j == len(new_row[0]) - 1 or new_row[0][j] != new_row[0][j + 1]):
-
-
+               print(new_row[1][j])
+               print(new_row[1][flagOne + 1])
                x = (int(new_row[1][j]) - int(new_row[1][flagOne + 1])) / float(1000000)
                if ( x >= 1):
                   counter += x
@@ -546,6 +582,8 @@ def roh_individual(aoa,aoa_num, k):
       else:
 
          if (new_row[2][j] == 0 or new_row[2][j] == 2):
+            print(new_row[1][j - 1])
+            print(new_row[1][flagOne + 1])
             x = (int(new_row[1][j - 1]) - int(new_row[1][flagOne + 1])) / float(1000000)
             if (x >= 1):
                 counter += x
@@ -583,12 +621,13 @@ def expect_roh(distans, matrix):
    cromozom = matrix[0]
    snp_cow1 = matrix[2]
    snp_cow2 = matrix[3]
-
+   print(cromozom)
    i = 0
    start = 0
    end = 0
    sum = 0
    new_row = [0,0,0,0]
+   print(distans)
    while (i<len(distans)):
       if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
          start = i
@@ -612,6 +651,7 @@ def expect_roh(distans, matrix):
       start = 0
       end = 0
    i = 0
+   print(distans)
    while (i < len(distans)):
       if (distans[i] != 2 and cromozom[end + 1] == cromozom[end] and i + 1 < len(distans)):
          start = i
@@ -637,6 +677,7 @@ def expect_roh(distans, matrix):
       start = 0
       end = 0
    i = 0
+   print(distans)
    while (i<len(distans)):
       S1 = ""
       S2 = ""
@@ -677,7 +718,7 @@ def expect_roh(distans, matrix):
          if (S1 != ""):
             if (S1 == S2):
                counter = (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
-               if (counter < 2.0):
+               if (counter < 1.0):
                   for k in range(start, end + 1):
                      distans[k] = 1
                else:
@@ -687,7 +728,7 @@ def expect_roh(distans, matrix):
                   sum += counter
             else:
                counter = (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
-               if (counter < 2.0):
+               if (counter < 1.0):
                   for k in range(start, end + 1):
                      distans[k] = 1
                else:
@@ -703,6 +744,7 @@ def expect_roh(distans, matrix):
       start = 0
       end = 0
    i = 0
+   print(distans)
    while (i<len(distans)):
       if (distans[i] == 0 and cromozom[end+1] == cromozom[end] and i+1<len(distans)):
          start = i
@@ -729,6 +771,7 @@ def expect_roh(distans, matrix):
       start = 0
       end = 0
    i = 0
+   print(distans)
    while (i<len(distans)):
       S1 = ""
       S2 = ""
@@ -782,7 +825,7 @@ def expect_roh(distans, matrix):
          if (S1 != ""):
             if (S1 == S2 or S1 == S3):
                counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
-               if (counter <2):
+               if (counter <1.0):
                   for k in range(start, end + 1):
                      distans[k] = 0
                else:
@@ -793,7 +836,7 @@ def expect_roh(distans, matrix):
             else:
                counter =  (int(matrix[1][end]) - int(matrix[1][start])) / float(1000000)
 
-               if (counter < 2):
+               if (counter < 1.0):
                   for k in range(start, end + 1):
                      distans[k] = 0
                else:
@@ -809,6 +852,7 @@ def expect_roh(distans, matrix):
       i = i + 1
       start = 0
       end = 0
+   print(distans)
    print(new_row)
    return sum
 
@@ -824,7 +868,6 @@ def matrix_Equals(aoa ,aoa_num, index):
    x = expect_roh(dis,new_row)
    return (x)
 
-
 def selectTWO(aoa,Cow,Sire):
    cow = -2
    sire = -2
@@ -838,6 +881,8 @@ def selectTWO(aoa,Cow,Sire):
          sire = counter
    return cow,sire
 
+
+
 def madadim():
    df = pd.read_excel('Moran_cows_if.xlsx')
    new_roh = []
@@ -847,7 +892,7 @@ def madadim():
       y = selectTWO(aoa_all, df["Dam"][i], df["Sire"][i])
       roh_list = matrix_Equals(aoa_for_roh, x, y)
       new_roh.append(roh_list)
-   df["expect-roh-3"] = new_roh
+   df["expect-roh"] = new_roh
 
    new_roh = []
    for i in range(len(df["Cow"])):
@@ -872,5 +917,4 @@ def madadim():
    df.to_excel("Measures.xlsx")
 
 #madadim()
-
 
